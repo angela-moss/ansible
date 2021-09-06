@@ -1,0 +1,125 @@
+Propiedad de Red Hat
+
+Automatización de procesos en routers, switches y servidores. 
+
+Ej. etc/resolv.conf
+
+
+Crear un servidor de control (Control Station) Control center
+
+Es agentless
+
+Se lanzan los comandos por ssh
+
+Modelo push
+
+PASOS
+Se crear un server con ansible que es le que va a mandar sobre los demás nodos. 
+Se accede a él por ssh
+Ir al directorio de ansible: cd /etc/ansible
+Dentro encontraremos 3 elementos: ansible.cfg hosts y roles
+
+ansible.cfg sirve para controlar las configuraciones
+hosts es para listar los objetivos. Es un inventario.
+
+sudo nano host
+
+Crear un grupo llamado linux (por ejemplo)
+Se usa root a modo de ejemplo, pero no es recomendabe. 
+
+-----------------------------------------------------
+[linux]
+
+45.56.56.150
+34.56.3.2
+
+[linux:vars]
+
+ansible user=root
+ansible_password=P@assword123
+-----------------------------------------------------
+
+Editar ansible.cfg
+
+Descomentar
+host_key_checking = false
+
+Guardar y salir
+
+Ejecutar:
+ansible linux -m ping
+
+linux es el grupo, -m significa módulo
+
+Ejecutar:
+ansible linux -a "cat /etc/os-release"
+
+-a se usa para lanzar comandos al vuelo. 
+
+Ejecutar:
+ansible linux -a "reboot"
+
+------------------------------------------------------------------------------
+PLAYBOOKS
+
+Playbook = yaml (lenguaje de marcado)
+	Plays
+		Tasks (tareas de linux)
+
+------------------------------------------------------------------------------
+Ejemplo de playbook .yml que comprueba si nano está disponible, si no lo estuviese, haría un cambio,
+que sería instalarlo. 
+
+
+  - name: nombredelplaybook
+  - hosts: linux
+  - tasks: 
+      - name: ensure nano is there
+	yum: 
+          name: nano
+          state: latest
+
+------------------------------------------------------------------------------
+
+Ejecutar el playbook
+
+ansible-playbook nombredelplaybook.yml
+
+El siguiente fichero dice que nano no debe estar "state: absent", así que lo borrará de los hosts
+donde esté instalado. 
+------------------------------------------------------------------------------
+Ejemplo de playbook .yml
+
+
+  - name: nombredelplaybook
+  - hosts: linux
+  - tasks: 
+      - name: ensure nano is there
+	yum: 
+          name: nano
+          state: absent
+
+------------------------------------------------------------------------------
+
+Recordar que:
+podría tener varios grupos con distintas o mismas máquinas.
+ 
+Hay que generar una llave ssh antes y copiarla en estos. 
+
+ssh-keygen
+
+Las copiamos en todas las máquinas objetivo. 
+
+ssh-copy-id root@172.143.23.5 
+
+(Hacer un script para lanzar las claves ssh)
+
+Para forzar en "hosts" que se use un usuario específico:
+
+187.123.123.123 ansible_ssh_user=root
+
+Para mandar un ping a múltiples grupos
+ansible grupo1:grupo2 -m ping
+
+Ejemplo que comando lanzado al vuelo:
+ansible 233.222.221.1 -m shell -a "echo 'hello world'"
